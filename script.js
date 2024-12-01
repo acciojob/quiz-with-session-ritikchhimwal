@@ -23,19 +23,24 @@ function renderQuestions() {
       choiceElement.type = 'radio';
       choiceElement.name = `question-${i}`;
       choiceElement.value = choice;
+
+      // Apply the 'checked' attribute correctly
       if (userAnswers[i] === choice) {
-        choiceElement.checked = true;
+        choiceElement.checked = true; // Ensures the browser renders it as checked
       }
+
       choiceElement.addEventListener('change', () => {
         userAnswers[i] = choice;
         sessionStorage.setItem('progress', JSON.stringify(userAnswers));
       });
+
       questionDiv.appendChild(choiceElement);
       questionDiv.appendChild(document.createTextNode(choice));
     });
     questionsElement.appendChild(questionDiv);
   });
 }
+
 
 function calculateScore() {
   let score = 0;
