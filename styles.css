@@ -1,6 +1,6 @@
 /*  your css code here. If applicable */
 body {
-  font-family: Arial, sans-serif;
+  font-family: Gilroy, sans-serif;
 }
 
 h1 {
@@ -11,7 +11,3 @@ h1 {
   margin-bottom: 20px;
 }
 
-label {
-  display: block;
-  margin: 5px 0;
-}
