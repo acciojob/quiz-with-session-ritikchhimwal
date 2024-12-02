@@ -10,21 +10,18 @@ const progressKey = 'quizProgress';
 const scoreKey = 'quizScore';
 
 window.onload = () => {
-  const savedProgress = sessionStorage.getItem(progressKey);
+  loadProgress();
   displayQuestions();
-  if (savedProgress) {
-    loadProgress(JSON.parse(savedProgress));
-  }
 };
 
 function displayQuestions() {
   const questionsDiv = document.getElementById('questions');
   questionsDiv.innerHTML = '';
-
+  
   questions.forEach((question, index) => {
     const questionDiv = document.createElement('div');
     questionDiv.innerHTML = `
-      <h3>${question.question.trim()}</h3>
+      <h3>${question.question}</h3>
       <ul>
         ${question.choices.map(choice => `
           <li>
@@ -32,31 +29,40 @@ function displayQuestions() {
               <input type="radio" name="q${index}" value="${choice}">
               ${choice}
             </label>
-          </li>`).join('')}
+          </li>
+        `).join('')}
       </ul>
     `;
     questionsDiv.appendChild(questionDiv);
   });
+
+  applySavedSelections();
 }
 
 function saveProgress() {
-  const selectedOptions = {};
+  const progress = {};
   questions.forEach((_, index) => {
-    const selected = document.querySelector(`input[name="q${index}"]:checked`);
-    if (selected) {
-      selectedOptions[`q${index}`] = selected.value;
+    const selectedOption = document.querySelector(`input[name="q${index}"]:checked`);
+    if (selectedOption) {
+      progress[`q${index}`] = selectedOption.value;
     }
   });
-  sessionStorage.setItem(progressKey, JSON.stringify(selectedOptions));
+  sessionStorage.setItem(progressKey, JSON.stringify(progress));
 }
 
-function loadProgress(progress) {
-  Object.keys(progress).forEach(key => {
+function loadProgress() {
+  const savedProgress = sessionStorage.getItem(progressKey);
+  return savedProgress ? JSON.parse(savedProgress) : {};
+}
+
+function applySavedSelections() {
+  const progress = loadProgress();
+  for (const key in progress) {
     const radio = document.querySelector(`input[name="${key}"][value="${progress[key]}"]`);
     if (radio) {
       radio.checked = true;
     }
-  });
+  }
 }
 
 function submitQuiz() {
@@ -70,14 +76,12 @@ function submitQuiz() {
 
   const scoreDiv = document.getElementById('score');
   scoreDiv.textContent = `Your score is ${score} out of ${questions.length}.`;
-
   localStorage.setItem(scoreKey, score);
 }
 
-const submitButton = document.getElementById('submit');
-submitButton.addEventListener('click', () => {
-  submitButton.disabled = true;
+document.getElementById('submit').addEventListener('click', () => {
   submitQuiz();
 });
 
+// Save progress on option change
 document.addEventListener('change', saveProgress);
