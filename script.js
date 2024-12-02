@@ -24,7 +24,7 @@ function displayQuestions() {
   questions.forEach((question, index) => {
     const questionDiv = document.createElement('div');
     questionDiv.innerHTML = `
-      <h3>${question.question}</h3>
+      <h3>${question.question.trim()}</h3>
       <ul>
         ${question.choices.map(choice => `
           <li>
@@ -54,8 +54,7 @@ function loadProgress(progress) {
   Object.keys(progress).forEach(key => {
     const radio = document.querySelector(`input[name="${key}"][value="${progress[key]}"]`);
     if (radio) {
-      radio.checked = true; // This reflects in the DOM
-      radio.setAttribute('checked', 'true'); // Explicitly sets the checked attribute
+      radio.checked = true;
     }
   });
 }
@@ -70,17 +69,15 @@ function submitQuiz() {
   });
 
   const scoreDiv = document.getElementById('score');
-  scoreDiv.textContent = `Your score is ${score} out of ${questions.length}`;
+  scoreDiv.textContent = `Your score is ${score} out of ${questions.length}.`;
 
-  // Store the score in local storage
   localStorage.setItem(scoreKey, score);
 }
 
 const submitButton = document.getElementById('submit');
 submitButton.addEventListener('click', () => {
-  submitButton.disabled = true; // Disable the button to prevent multiple submissions
+  submitButton.disabled = true;
   submitQuiz();
 });
 
-// Save progress on every change
 document.addEventListener('change', saveProgress);
