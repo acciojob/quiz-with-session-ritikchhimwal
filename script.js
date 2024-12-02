@@ -6,56 +6,50 @@ const questions = [
   { question: "What is the capital of Canada?", choices: ["Toronto", "Montreal", "Vancouver", "Ottawa"], answer: "Ottawa" },
 ];
 
-const questionsElement = document.getElementById('questions');
-const submitButton = document.getElementById('submit');
-const scoreDisplay = document.getElementById('score');
+// Load progress from session storage
+const savedProgress = JSON.parse(sessionStorage.getItem('progress')) || {};
 
-// Retrieve user progress from session storage
-const userAnswers = JSON.parse(sessionStorage.getItem('progress')) || {};
+// Render questions
+const questionsDiv = document.getElementById('questions');
+questions.forEach((q, index) => {
+  const questionDiv = document.createElement('div');
+  questionDiv.classList.add('question');
 
-function renderQuestions() {
-  questionsElement.innerHTML = ''; // Clear any existing questions
-  questions.forEach((question, i) => {
-    const questionDiv = document.createElement('div');
-    questionDiv.innerHTML = `<p>${question.question}</p>`;
-    question.choices.forEach(choice => {
-      const choiceElement = document.createElement('input');
-      choiceElement.type = 'radio';
-      choiceElement.name = `question-${i}`;
-      choiceElement.value = choice;
+  const questionText = document.createElement('h3');
+  questionText.textContent = q.question;
+  questionDiv.appendChild(questionText);
 
-      // Apply the 'checked' attribute correctly
-      if (userAnswers[i] === choice) {
-        choiceElement.checked = true; // Ensures the browser renders it as checked
-      }
+  q.choices.forEach(choice => {
+    const label = document.createElement('label');
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = `question-${index}`;
+    input.value = choice;
+    input.checked = savedProgress[`question-${index}`] === choice;
 
-      choiceElement.addEventListener('change', () => {
-        userAnswers[i] = choice;
-        sessionStorage.setItem('progress', JSON.stringify(userAnswers));
-      });
-
-      questionDiv.appendChild(choiceElement);
-      questionDiv.appendChild(document.createTextNode(choice));
+    input.addEventListener('change', () => {
+      savedProgress[`question-${index}`] = choice;
+      sessionStorage.setItem('progress', JSON.stringify(savedProgress));
     });
-    questionsElement.appendChild(questionDiv);
+
+    label.appendChild(input);
+    label.appendChild(document.createTextNode(choice));
+    questionDiv.appendChild(label);
   });
-}
 
+  questionsDiv.appendChild(questionDiv);
+});
 
-function calculateScore() {
+// Submit quiz
+document.getElementById('submit').addEventListener('click', () => {
   let score = 0;
-  questions.forEach((question, i) => {
-    if (userAnswers[i] === question.answer) {
+  
+  questions.forEach((q, index) => {
+    if (savedProgress[`question-${index}`] === q.answer) {
       score++;
     }
   });
-  return score;
-}
 
-submitButton.addEventListener('click', () => {
-  const score = calculateScore();
+  document.getElementById('score').textContent = `Your score is ${score} out of 5.`;
   localStorage.setItem('score', score);
-  scoreDisplay.textContent = `Your score is ${score} out of ${questions.length}.`;
 });
-
-renderQuestions();
