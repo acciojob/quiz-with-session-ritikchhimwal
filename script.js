@@ -10,13 +10,10 @@ const progressKey = 'quizProgress';
 const scoreKey = 'quizScore';
 
 window.onload = () => {
-  // Load saved progress, if any
   const savedProgress = sessionStorage.getItem(progressKey);
+  displayQuestions();
   if (savedProgress) {
-    const progress = JSON.parse(savedProgress);
-    loadProgress(progress);
-  } else {
-    displayQuestions();
+    loadProgress(JSON.parse(savedProgress));
   }
 };
 
@@ -25,11 +22,17 @@ function displayQuestions() {
   questionsDiv.innerHTML = '';
 
   questions.forEach((question, index) => {
-    const questionDiv  = document.createElement('div');
+    const questionDiv = document.createElement('div');
     questionDiv.innerHTML = `
       <h3>${question.question}</h3>
       <ul>
-        ${question.choices.map(choice => `<li><input type="radio" name="q${index}" value="${choice}"> ${choice}</li>`).join('')}
+        ${question.choices.map(choice => `
+          <li>
+            <label>
+              <input type="radio" name="q${index}" value="${choice}">
+              ${choice}
+            </label>
+          </li>`).join('')}
       </ul>
     `;
     questionsDiv.appendChild(questionDiv);
@@ -37,26 +40,31 @@ function displayQuestions() {
 }
 
 function saveProgress() {
-  const selectedOptions = [];
-  const radios = document.querySelectorAll('input[type="radio"]:checked');
-  radios.forEach(radio => {
-    selectedOptions.push(radio.value);
+  const selectedOptions = {};
+  questions.forEach((_, index) => {
+    const selected = document.querySelector(`input[name="q${index}"]:checked`);
+    if (selected) {
+      selectedOptions[`q${index}`] = selected.value;
+    }
   });
   sessionStorage.setItem(progressKey, JSON.stringify(selectedOptions));
 }
 
 function loadProgress(progress) {
-  const radios = document.querySelectorAll('input[type="radio"]');
-  progress.forEach((choice, index) => {
-    radios[index].checked = radios[index].value === choice;
+  Object.keys(progress).forEach(key => {
+    const radio = document.querySelector(`input[name="${key}"][value="${progress[key]}"]`);
+    if (radio) {
+      radio.checked = true; // This reflects in the DOM
+      radio.setAttribute('checked', 'true'); // Explicitly sets the checked attribute
+    }
   });
 }
 
 function submitQuiz() {
   let score = 0;
   questions.forEach((question, index) => {
-    const selectedOption = document.querySelector(`input[name="q${index}"]:checked`).value;
-    if (selectedOption === question.answer) {
+    const selectedOption = document.querySelector(`input[name="q${index}"]:checked`);
+    if (selectedOption && selectedOption.value === question.answer) {
       score++;
     }
   });
@@ -75,6 +83,4 @@ submitButton.addEventListener('click', () => {
 });
 
 // Save progress on every change
-document.addEventListener('change', () => {
-  saveProgress();
-});
+document.addEventListener('change', saveProgress);
